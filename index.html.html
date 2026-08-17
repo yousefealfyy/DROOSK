@@ -1,0 +1,1267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DROOSK — Clickable Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-cream:#FAF7F1;
+    --ink:#182420;
+    --ink-soft:#5B6B65;
+    --ink-faint:#93A29C;
+    --teal-deep:#0F5C56;
+    --teal-bright:#1C8C7D;
+    --teal-pale:#E9F3EF;
+    --teal-line:#D3E6E0;
+    --gold:#D99A4E;
+    --gold-pale:#FBEEDC;
+    --coral:#D9614C;
+    --coral-pale:#FBE7E2;
+    --white:#FFFFFF;
+    --line:#E4E1D7;
+    --radius-lg:22px;
+    --radius-md:16px;
+    --radius-sm:10px;
+    --shadow-card: 0 10px 30px rgba(15,50,45,0.08);
+    --shadow-pop: 0 20px 50px rgba(15,50,45,0.18);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: radial-gradient(circle at 15% 10%, #F3EFE3 0%, #E9E4D5 45%, #DFDACB 100%);
+    font-family:'Inter',sans-serif;
+    color:var(--ink);
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:36px 16px 60px;
+  }
+  .stage-header{
+    text-align:center;
+    margin-bottom:22px;
+    max-width:480px;
+  }
+  .stage-header .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--teal-deep);
+    font-weight:600;
+    margin-bottom:8px;
+  }
+  .stage-header h1{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:26px;
+    margin:0 0 8px;
+    letter-spacing:-.01em;
+  }
+  .stage-header p{
+    font-size:13.5px;
+    color:var(--ink-soft);
+    line-height:1.5;
+    margin:0;
+  }
+  .stage-header .tag{
+    font-style:italic;
+    font-family:'Fraunces',serif;
+    color:var(--teal-deep);
+  }
+
+  /* Phone frame */
+  .device{
+    position:relative;
+    width:390px;
+    height:824px;
+    background:#0D1210;
+    border-radius:52px;
+    padding:14px;
+    box-shadow: var(--shadow-pop), 0 0 0 2px rgba(255,255,255,0.4) inset;
+  }
+  .device::before{
+    content:"";
+    position:absolute;
+    top:14px; left:50%; transform:translateX(-50%);
+    width:120px; height:28px;
+    background:#0D1210;
+    border-radius:0 0 18px 18px;
+    z-index:50;
+  }
+  .screen-frame{
+    position:relative;
+    width:100%; height:100%;
+    background:var(--bg-cream);
+    border-radius:38px;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+  }
+  .status-bar{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:16px 26px 6px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px; font-weight:600;
+    color:var(--ink);
+    flex-shrink:0;
+    z-index:20;
+    position:relative;
+  }
+  .app-body{
+    position:relative;
+    flex:1;
+    overflow:hidden;
+  }
+  .screen{
+    display:none;
+    position:absolute; inset:0;
+    flex-direction:column;
+  }
+  .screen.active{display:flex;}
+  .screen-scroll{
+    flex:1;
+    overflow-y:auto;
+    padding:4px 22px 28px;
+    scrollbar-width:none;
+  }
+  .screen-scroll::-webkit-scrollbar{display:none;}
+  .screen-scroll.no-pad-top{padding-top:0;}
+
+  /* Top bar within screens */
+  .topbar{
+    display:flex; align-items:center; gap:12px;
+    padding:6px 4px 18px;
+  }
+  .topbar h2{
+    font-family:'Fraunces',serif;
+    font-size:19px; font-weight:600; margin:0;
+    letter-spacing:-.01em;
+  }
+  .back-btn{
+    width:34px; height:34px; border-radius:50%;
+    background:var(--white); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; flex-shrink:0;
+    box-shadow:0 2px 6px rgba(15,50,45,0.06);
+  }
+  .back-btn:active{ transform:scale(0.94); }
+  .back-btn svg{width:16px;height:16px;}
+
+  /* Buttons */
+  .btn{
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    font-family:'Inter',sans-serif;
+    font-weight:600; font-size:14.5px;
+    border:none; border-radius:100px;
+    padding:15px 20px;
+    cursor:pointer;
+    width:100%;
+    transition:transform .12s ease, opacity .12s ease;
+  }
+  .btn:active{transform:scale(0.97);}
+  .btn-primary{ background:var(--teal-deep); color:#fff; box-shadow:0 10px 20px rgba(15,92,86,0.25);}
+  .btn-primary:hover{background:#0C4A45;}
+  .btn-secondary{ background:var(--white); color:var(--teal-deep); border:1.5px solid var(--teal-deep);}
+  .btn-ghost{ background:transparent; color:var(--ink-soft); font-weight:500;}
+  .btn-gold{ background:var(--gold); color:#3B2A14; box-shadow:0 10px 20px rgba(217,154,78,0.3);}
+  .btn:disabled{opacity:.45; cursor:not-allowed; box-shadow:none;}
+
+  /* Utility */
+  .eyebrow-sm{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--teal-deep); font-weight:600;
+  }
+  .muted{color:var(--ink-soft); font-size:13px; line-height:1.5;}
+  .divider{height:1px; background:var(--line); margin:18px 0; border:none;}
+
+  /* Splash */
+  #screen-splash .screen-scroll{ display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:0 30px;}
+  .splash-tooth{ margin-bottom:26px; }
+  .brand-word{ font-family:'Fraunces',serif; font-size:40px; font-weight:600; letter-spacing:-0.01em; color:var(--teal-deep); margin:0;}
+  .brand-sub{ font-size:14px; color:var(--ink-soft); margin-top:10px; max-width:230px; line-height:1.5;}
+  .splash-loader{ width:120px; height:3px; background:var(--teal-line); border-radius:10px; margin-top:40px; overflow:hidden;}
+  .splash-loader-fill{ width:0%; height:100%; background:var(--teal-deep); border-radius:10px; animation: loadfill 1.6s ease forwards;}
+  @keyframes loadfill{ from{width:0%;} to{width:100%;} }
+
+  /* Onboarding */
+  .onb-visual{
+    height:230px; border-radius:var(--radius-lg);
+    background:linear-gradient(160deg,var(--teal-pale),var(--white));
+    display:flex; align-items:center; justify-content:center;
+    margin-bottom:26px; border:1px solid var(--teal-line);
+    position:relative; overflow:hidden;
+  }
+  .onb-dots{ display:flex; gap:6px; justify-content:center; margin:22px 0 8px;}
+  .onb-dot{ width:7px; height:7px; border-radius:50%; background:var(--teal-line); transition:.2s;}
+  .onb-dot.active{ width:20px; border-radius:5px; background:var(--teal-deep);}
+  .onb-title{ font-family:'Fraunces',serif; font-size:22px; font-weight:600; text-align:center; margin:0 0 10px; letter-spacing:-.01em;}
+  .onb-text{ text-align:center; font-size:13.5px; color:var(--ink-soft); line-height:1.55; max-width:290px; margin:0 auto;}
+
+  /* Form elements */
+  .field{ margin-bottom:16px; }
+  .field label{ display:block; font-size:12.5px; font-weight:600; color:var(--ink); margin-bottom:7px;}
+  .field input, .field select{
+    width:100%; padding:13px 15px; border-radius:var(--radius-sm);
+    border:1.5px solid var(--line); background:var(--white);
+    font-family:'Inter',sans-serif; font-size:14px; color:var(--ink);
+    outline:none;
+  }
+  .field input:focus, .field select:focus{ border-color:var(--teal-bright); }
+  .chip-row{ display:flex; flex-wrap:wrap; gap:8px; }
+  .chip{
+    padding:10px 15px; border-radius:100px; border:1.5px solid var(--line);
+    background:var(--white); font-size:13px; font-weight:600; color:var(--ink-soft);
+    cursor:pointer; transition:.15s;
+  }
+  .chip.selected{ background:var(--teal-deep); border-color:var(--teal-deep); color:#fff; }
+  .chip:active{transform:scale(0.96);}
+
+  /* Cards */
+  .card{
+    background:var(--white); border-radius:var(--radius-md);
+    border:1px solid var(--line); box-shadow:var(--shadow-card);
+    padding:18px;
+  }
+  .section-label{
+    font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.1em;
+    text-transform:uppercase; color:var(--ink-faint); font-weight:600;
+    margin:22px 0 10px;
+  }
+  .section-label:first-child{ margin-top:0; }
+
+  /* Tooth signature progress element */
+  .tooth-wrap{ position:relative; flex-shrink:0; }
+  .tooth-wrap svg{ position:absolute; top:0; left:0; }
+  .tooth-wrap .tooth-fg{ clip-path: inset(calc(100% - var(--pct,50%)) 0 0 0); transition:clip-path 1s cubic-bezier(.4,0,.2,1);}
+  .tooth-label{
+    position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    font-family:'IBM Plex Mono',monospace; font-weight:600;
+  }
+
+  /* Skill assessment */
+  .assess-intro-visual{
+    height:190px; border-radius:var(--radius-lg); background:linear-gradient(160deg,var(--teal-deep),#0B3F3B);
+    display:flex; align-items:center; justify-content:center; margin-bottom:20px; position:relative; overflow:hidden;
+  }
+  .quiz-progress{ display:flex; gap:6px; margin-bottom:22px;}
+  .quiz-progress span{ height:4px; flex:1; border-radius:4px; background:var(--teal-line);}
+  .quiz-progress span.done{ background:var(--teal-deep);}
+  .quiz-q-num{ font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--teal-deep); font-weight:600; margin-bottom:8px;}
+  .quiz-question{ font-family:'Fraunces',serif; font-size:19px; font-weight:600; line-height:1.35; margin:0 0 20px;}
+  .quiz-option{
+    display:flex; align-items:center; gap:12px;
+    padding:15px 16px; border-radius:var(--radius-sm); border:1.5px solid var(--line);
+    background:var(--white); margin-bottom:10px; cursor:pointer; font-size:14px; font-weight:500;
+    transition:.15s;
+  }
+  .quiz-option .dot{ width:18px; height:18px; border-radius:50%; border:2px solid var(--line); flex-shrink:0; position:relative;}
+  .quiz-option.selected{ border-color:var(--teal-deep); background:var(--teal-pale);}
+  .quiz-option.selected .dot{ border-color:var(--teal-deep);}
+  .quiz-option.selected .dot::after{ content:""; position:absolute; inset:3px; border-radius:50%; background:var(--teal-deep);}
+
+  .loading-wrap{ display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; text-align:center; padding:0 30px;}
+  .spinner{ width:46px; height:46px; border-radius:50%; border:3px solid var(--teal-line); border-top-color:var(--teal-deep); animation:spin 0.9s linear infinite; margin-bottom:22px;}
+  @keyframes spin{ to{transform:rotate(360deg);} }
+
+  /* Result screen */
+  .result-hero{ display:flex; flex-direction:column; align-items:center; text-align:center; padding:8px 0 24px;}
+  .level-badge{ display:inline-flex; align-items:center; gap:6px; background:var(--gold-pale); color:#7A501C; font-weight:700; font-size:12px; padding:6px 14px; border-radius:100px; margin-top:14px;}
+  .skill-row{ display:flex; align-items:center; gap:14px; padding:12px 0;}
+  .skill-row-info{ flex:1; }
+  .skill-row-top{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px;}
+  .skill-row-top .name{ font-weight:600; font-size:13.5px;}
+  .skill-row-top .pct{ font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:12.5px; color:var(--teal-deep);}
+  .bar-track{ height:7px; border-radius:6px; background:var(--teal-pale); overflow:hidden;}
+  .bar-fill{ height:100%; border-radius:6px; background:linear-gradient(90deg,var(--teal-bright),var(--teal-deep)); transition:width 1s ease;}
+
+  /* Skill gap callout */
+  .gap-callout{
+    background:linear-gradient(160deg,#FBEEDC,#FBE7E2);
+    border-radius:var(--radius-lg); padding:22px; border:1px solid var(--gold);
+    margin-bottom:18px;
+  }
+  .gap-callout .eyebrow-sm{ color:#9C5A1E; }
+  .gap-callout h3{ font-family:'Fraunces',serif; font-size:20px; margin:8px 0 8px; font-weight:600;}
+
+  /* Home */
+  .greet{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px;}
+  .greet h1{ font-family:'Fraunces',serif; font-size:23px; font-weight:600; margin:0; letter-spacing:-.01em;}
+  .greet .avatar{ width:42px; height:42px; border-radius:50%; background:var(--teal-deep); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-family:'Fraunces',serif; cursor:pointer; flex-shrink:0;}
+  .home-tagline{ font-size:13px; color:var(--ink-soft); margin:2px 0 22px;}
+
+  .reco-card{
+    position:relative;
+    background:linear-gradient(160deg,#0F5C56,#0A3D39);
+    border-radius:var(--radius-lg); padding:22px; color:#fff; overflow:hidden;
+    cursor:pointer; box-shadow:0 16px 34px rgba(15,92,86,0.32);
+  }
+  .reco-card::after{
+    content:""; position:absolute; right:-40px; top:-40px; width:160px; height:160px;
+    background:radial-gradient(circle, rgba(217,154,78,0.35), transparent 70%);
+  }
+  .reco-eyebrow{ font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:#B9E0D6; font-weight:600;}
+  .reco-title{ font-family:'Fraunces',serif; font-size:21px; font-weight:600; margin:8px 0 6px; line-height:1.25;}
+  .reco-why{ font-size:12.5px; color:#D6EDE7; margin-bottom:16px; line-height:1.5;}
+  .reco-meta{ display:flex; gap:14px; font-size:11.5px; color:#B9E0D6; margin-bottom:16px; font-family:'IBM Plex Mono',monospace;}
+  .reco-cta{ display:inline-flex; align-items:center; gap:6px; background:#fff; color:var(--teal-deep); font-weight:700; font-size:13px; padding:11px 18px; border-radius:100px;}
+
+  .quick-row{ display:flex; gap:12px; margin-top:18px; }
+  .quick-tile{ flex:1; background:var(--white); border:1px solid var(--line); border-radius:var(--radius-md); padding:14px; text-align:center; cursor:pointer; box-shadow:var(--shadow-card);}
+  .quick-tile .n{ font-family:'IBM Plex Mono',monospace; font-weight:700; font-size:17px; color:var(--teal-deep);}
+  .quick-tile .l{ font-size:11px; color:var(--ink-soft); margin-top:3px; font-weight:600;}
+
+  .promo-strip{
+    display:flex; align-items:center; gap:12px; background:var(--white); border:1px dashed var(--line);
+    border-radius:var(--radius-md); padding:12px 14px; margin-top:20px; cursor:pointer;
+  }
+  .promo-strip .ic{ width:34px;height:34px;border-radius:10px;background:var(--gold-pale); display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+  .promo-strip .t{ font-size:12.5px; font-weight:600;}
+  .promo-strip .s{ font-size:11px; color:var(--ink-soft);}
+
+  /* Training list */
+  .filter-scroll{ display:flex; gap:8px; overflow-x:auto; padding-bottom:14px; margin-bottom:6px; scrollbar-width:none;}
+  .filter-scroll::-webkit-scrollbar{display:none;}
+  .filter-chip{ white-space:nowrap; padding:9px 14px; border-radius:100px; border:1.5px solid var(--line); background:var(--white); font-size:12.5px; font-weight:600; color:var(--ink-soft); display:flex; align-items:center; gap:5px; flex-shrink:0;}
+  .filter-chip.active{ background:var(--ink); color:#fff; border-color:var(--ink);}
+
+  .t-card{ background:var(--white); border:1px solid var(--line); border-radius:var(--radius-md); padding:16px; margin-bottom:14px; cursor:pointer; box-shadow:var(--shadow-card); position:relative;}
+  .t-card.locked{ opacity:.6; }
+  .t-card-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:8px;}
+  .t-badge{ font-size:10px; font-weight:700; padding:4px 9px; border-radius:100px; text-transform:uppercase; letter-spacing:.04em; font-family:'IBM Plex Mono',monospace;}
+  .t-badge.reco{ background:var(--gold-pale); color:#7A501C;}
+  .t-badge.level{ background:var(--teal-pale); color:var(--teal-deep);}
+  .t-card h4{ font-family:'Fraunces',serif; font-size:16.5px; font-weight:600; margin:10px 0 4px;}
+  .t-card .clinic{ font-size:12.5px; color:var(--ink-soft); margin-bottom:10px;}
+  .t-card .meta{ display:flex; flex-wrap:wrap; gap:10px; font-size:11.5px; color:var(--ink-soft); margin-bottom:10px;}
+  .t-card .meta span{ display:flex; align-items:center; gap:4px;}
+  .t-card-bottom{ display:flex; justify-content:space-between; align-items:center; padding-top:10px; border-top:1px solid var(--line);}
+  .t-price{ font-family:'IBM Plex Mono',monospace; font-weight:700; color:var(--teal-deep); font-size:14px;}
+  .t-rating{ font-size:12.5px; font-weight:600; display:flex; align-items:center; gap:4px;}
+  .lock-pill{ position:absolute; top:14px; right:14px; background:var(--ink); color:#fff; font-size:10px; font-weight:700; padding:5px 10px; border-radius:100px; display:flex; align-items:center; gap:4px;}
+
+  /* Training details */
+  .td-hero{ border-radius:var(--radius-lg); height:150px; background:linear-gradient(160deg,var(--teal-pale),#fff); border:1px solid var(--teal-line); display:flex; align-items:center; justify-content:center; margin-bottom:18px;}
+  .verified-badge{ display:inline-flex; align-items:center; gap:5px; background:var(--teal-pale); color:var(--teal-deep); font-size:11px; font-weight:700; padding:5px 10px; border-radius:100px;}
+  .td-title{ font-family:'Fraunces',serif; font-size:22px; font-weight:600; margin:12px 0 4px; line-height:1.25;}
+  .td-clinic{ font-size:13px; color:var(--ink-soft); margin-bottom:14px;}
+  .info-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:6px;}
+  .info-cell{ background:var(--white); border:1px solid var(--line); border-radius:var(--radius-sm); padding:12px;}
+  .info-cell .l{ font-size:10.5px; color:var(--ink-faint); font-weight:600; text-transform:uppercase; letter-spacing:.05em; margin-bottom:4px; font-family:'IBM Plex Mono',monospace;}
+  .info-cell .v{ font-size:13.5px; font-weight:700;}
+  .learn-list{ list-style:none; padding:0; margin:0;}
+  .learn-list li{ display:flex; gap:10px; font-size:13.5px; padding:8px 0; align-items:flex-start;}
+  .learn-list li svg{ flex-shrink:0; margin-top:2px;}
+  .why-box{ background:var(--teal-pale); border-radius:var(--radius-md); padding:16px; border:1px solid var(--teal-line);}
+  .why-box h4{ font-family:'Fraunces',serif; font-size:15.5px; margin:0 0 10px; font-weight:600; color:var(--teal-deep);}
+  .why-item{ display:flex; gap:8px; font-size:12.5px; padding:5px 0; color:#1F5952;}
+  .review-card{ display:flex; gap:12px; padding:14px 0; border-bottom:1px solid var(--line);}
+  .review-avatar{ width:36px; height:36px; border-radius:50%; background:var(--gold-pale); color:#7A501C; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; flex-shrink:0; font-family:'Fraunces',serif;}
+  .review-name{ font-size:13px; font-weight:700;}
+  .review-stars{ font-size:11px; color:var(--gold); margin-bottom:3px;}
+  .review-text{ font-size:12.5px; color:var(--ink-soft); line-height:1.5;}
+  .sticky-cta{ padding:14px 22px 20px; background:linear-gradient(180deg,rgba(250,247,241,0) ,var(--bg-cream) 30%); flex-shrink:0;}
+  .locked-banner{ display:flex; gap:12px; align-items:flex-start; background:var(--coral-pale); border:1px solid #F0C3B8; border-radius:var(--radius-md); padding:14px; margin-bottom:16px;}
+  .locked-banner .t{ font-weight:700; font-size:13.5px; color:#A13F2C; margin-bottom:3px;}
+  .locked-banner .s{ font-size:12px; color:#A13F2C; line-height:1.4;}
+
+  /* Booking */
+  .date-scroll{ display:flex; gap:10px; overflow-x:auto; padding-bottom:8px; scrollbar-width:none;}
+  .date-scroll::-webkit-scrollbar{display:none;}
+  .date-chip{ flex-shrink:0; width:64px; padding:12px 0; border-radius:var(--radius-sm); border:1.5px solid var(--line); background:var(--white); text-align:center; cursor:pointer;}
+  .date-chip .d{ font-size:17px; font-weight:700; font-family:'IBM Plex Mono',monospace;}
+  .date-chip .m{ font-size:10.5px; color:var(--ink-soft); font-weight:600; text-transform:uppercase; margin-top:2px;}
+  .date-chip.selected{ background:var(--teal-deep); border-color:var(--teal-deep);}
+  .date-chip.selected .d, .date-chip.selected .m{ color:#fff;}
+  .time-chip{ padding:11px 16px; border-radius:100px; border:1.5px solid var(--line); background:#fff; font-size:13px; font-weight:600; cursor:pointer;}
+  .time-chip.selected{ background:var(--teal-deep); border-color:var(--teal-deep); color:#fff;}
+  .summary-row{ display:flex; justify-content:space-between; font-size:13.5px; padding:9px 0;}
+  .summary-row.total{ font-weight:700; font-size:15px; border-top:1px solid var(--line); margin-top:6px; padding-top:14px;}
+  .discount-row{ color:var(--teal-deep); font-weight:600;}
+
+  /* Confirmation */
+  .confirm-wrap{ display:flex; flex-direction:column; align-items:center; text-align:center; padding-top:20px;}
+  .confirm-check{ width:84px; height:84px; border-radius:50%; background:var(--teal-pale); display:flex; align-items:center; justify-content:center; margin-bottom:22px; animation:pop .5s cubic-bezier(.34,1.56,.64,1);}
+  @keyframes pop{ from{transform:scale(0.6); opacity:0;} to{transform:scale(1); opacity:1;} }
+  .confirm-title{ font-family:'Fraunces',serif; font-size:23px; font-weight:600; margin:0 0 8px;}
+  .confirm-card{ width:100%; text-align:left; margin-top:22px;}
+  .confirm-line{ display:flex; justify-content:space-between; padding:9px 0; font-size:13.5px; border-bottom:1px solid var(--line);}
+  .confirm-line:last-child{ border-bottom:none;}
+  .confirm-line .l{ color:var(--ink-soft);}
+  .confirm-line .v{ font-weight:600;}
+
+  /* Tabs (My Training) */
+  .tab-row{ display:flex; gap:6px; background:var(--teal-pale); padding:4px; border-radius:100px; margin-bottom:20px;}
+  .tab-btn{ flex:1; text-align:center; padding:9px 0; border-radius:100px; font-size:12.5px; font-weight:700; cursor:pointer; color:var(--teal-deep);}
+  .tab-btn.active{ background:var(--teal-deep); color:#fff;}
+  .mt-card{ background:var(--white); border:1px solid var(--line); border-radius:var(--radius-md); padding:16px; margin-bottom:12px; cursor:pointer;}
+  .mt-card .top{ display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;}
+  .mt-card h5{ font-family:'Fraunces',serif; font-size:15px; margin:0; font-weight:600;}
+  .status-pill{ font-size:10px; font-weight:700; padding:4px 9px; border-radius:100px; text-transform:uppercase; font-family:'IBM Plex Mono',monospace;}
+  .status-pill.upcoming{ background:var(--gold-pale); color:#7A501C;}
+  .status-pill.completed{ background:var(--teal-pale); color:var(--teal-deep);}
+  .status-pill.saved{ background:#EFEAE0; color:var(--ink-soft);}
+  .skills-tag-row{ display:flex; flex-wrap:wrap; gap:6px; margin-top:10px;}
+  .skill-tag{ font-size:10.5px; font-weight:600; background:#F3F1E9; padding:4px 9px; border-radius:100px; color:var(--ink-soft);}
+  .empty-state{ text-align:center; padding:50px 20px; color:var(--ink-soft);}
+  .empty-state .ic{ width:56px;height:56px; border-radius:50%; background:var(--teal-pale); margin:0 auto 14px; display:flex; align-items:center; justify-content:center;}
+
+  /* Doctor verification */
+  .verify-hero{ text-align:center; padding:10px 0 8px;}
+  .verify-profile{ display:flex; align-items:center; gap:14px; padding:16px 0; border-bottom:1px solid var(--line);}
+  .verify-profile .av{ width:50px; height:50px; border-radius:50%; background:var(--teal-deep); color:#fff; display:flex; align-items:center; justify-content:center; font-family:'Fraunces',serif; font-weight:700; font-size:18px;}
+  .verify-checklist{ list-style:none; margin:0; padding:0;}
+  .verify-checklist li{ display:flex; align-items:center; gap:10px; padding:11px 0; font-size:13.5px; font-weight:500; border-bottom:1px solid var(--line);}
+  .verify-checklist li:last-child{ border-bottom:none;}
+  .verify-checklist .chk{ width:22px; height:22px; border-radius:6px; background:var(--teal-deep); display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+  .doctor-sign{ display:flex; align-items:center; gap:12px; background:var(--teal-pale); border-radius:var(--radius-md); padding:14px; margin:18px 0;}
+  .doctor-sign .av{ width:40px;height:40px; border-radius:50%; background:#fff; display:flex; align-items:center; justify-content:center; font-family:'Fraunces',serif; font-weight:700; color:var(--teal-deep); flex-shrink:0;}
+  .verify-success{ display:none; flex-direction:column; align-items:center; text-align:center; padding-top:30px;}
+  .verify-success.show{ display:flex; }
+  .verify-pending.hide{ display:none; }
+
+  /* Clinical profile */
+  .cp-header{ text-align:center; padding:10px 0 20px;}
+  .cp-avatar{ width:78px; height:78px; border-radius:50%; background:linear-gradient(160deg,var(--teal-deep),#0B3F3B); color:#fff; display:flex; align-items:center; justify-content:center; font-family:'Fraunces',serif; font-weight:700; font-size:28px; margin:0 auto 14px; box-shadow:0 10px 20px rgba(15,92,86,0.25);}
+  .cp-name{ font-family:'Fraunces',serif; font-size:20px; font-weight:600; margin:0 0 4px;}
+  .cp-uni{ font-size:12.5px; color:var(--ink-soft);}
+  .stat-row{ display:flex; gap:10px; margin:18px 0 6px;}
+  .stat-tile{ flex:1; background:var(--white); border:1px solid var(--line); border-radius:var(--radius-sm); text-align:center; padding:14px 6px;}
+  .stat-tile .n{ font-family:'IBM Plex Mono',monospace; font-weight:700; font-size:18px; color:var(--teal-deep);}
+  .stat-tile .l{ font-size:10px; color:var(--ink-soft); font-weight:600; margin-top:3px; text-transform:uppercase; letter-spacing:.03em;}
+  .exp-card{ display:flex; gap:12px; padding:13px 0; border-bottom:1px solid var(--line); align-items:flex-start;}
+  .exp-card:last-child{ border-bottom:none;}
+  .exp-ic{ width:36px;height:36px; border-radius:10px; background:var(--teal-pale); display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+
+  /* Progress journey */
+  .journey-ladder{ display:flex; justify-content:space-between; margin-bottom:26px; position:relative; padding:0 4px;}
+  .journey-ladder::before{ content:""; position:absolute; top:16px; left:30px; right:30px; height:2px; background:var(--teal-line); z-index:0;}
+  .journey-step{ position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; gap:8px; flex:1;}
+  .journey-step .node{ width:32px; height:32px; border-radius:50%; background:var(--white); border:2px solid var(--teal-line); display:flex; align-items:center; justify-content:center;}
+  .journey-step.done .node{ background:var(--teal-deep); border-color:var(--teal-deep);}
+  .journey-step.current .node{ background:var(--gold); border-color:var(--gold);}
+  .journey-step .lbl{ font-size:11px; font-weight:700; color:var(--ink-soft);}
+  .journey-step.current .lbl{ color:var(--ink);}
+  .skill-node{ display:flex; align-items:center; gap:14px; padding:14px 0; border-bottom:1px solid var(--line);}
+  .skill-node:last-child{border-bottom:none;}
+  .skill-node .info{ flex:1;}
+  .skill-node .name{ font-weight:700; font-size:13.5px; margin-bottom:3px;}
+  .skill-node .status{ font-size:11.5px; color:var(--ink-soft);}
+  .locked-node{ opacity:.55;}
+
+  /* Tools & deals (secondary) */
+  .secondary-note{ background:#F1EEE3; border-radius:var(--radius-sm); padding:10px 13px; font-size:11.5px; color:var(--ink-soft); margin-bottom:18px; display:flex; gap:8px; align-items:flex-start;}
+  .tool-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+  .tool-card{ background:var(--white); border:1px solid var(--line); border-radius:var(--radius-sm); padding:12px; text-align:center;}
+  .tool-card .ic{ width:100%; height:60px; border-radius:8px; background:#F3F1E9; display:flex; align-items:center; justify-content:center; margin-bottom:8px;}
+  .tool-card .n{ font-size:12px; font-weight:600;}
+  .tool-card .p{ font-size:11.5px; color:var(--ink-soft); margin-top:2px; font-family:'IBM Plex Mono',monospace;}
+  .deal-card{ display:flex; gap:12px; background:var(--white); border:1px solid var(--line); border-radius:var(--radius-sm); padding:13px; margin-bottom:10px; align-items:center;}
+  .deal-card .badge{ background:var(--gold-pale); color:#7A501C; font-size:10px; font-weight:800; padding:5px 9px; border-radius:6px; flex-shrink:0;}
+  .deal-card .t{ font-size:12.5px; font-weight:600;}
+  .deal-card .s{ font-size:11px; color:var(--ink-soft); margin-top:2px;}
+
+  /* Settings */
+  .set-list{ background:var(--white); border:1px solid var(--line); border-radius:var(--radius-md); overflow:hidden;}
+  .set-item{ display:flex; align-items:center; gap:12px; padding:15px 16px; border-bottom:1px solid var(--line); cursor:pointer;}
+  .set-item:last-child{ border-bottom:none;}
+  .set-item .ic{ width:32px;height:32px; border-radius:9px; background:var(--teal-pale); display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+  .set-item .t{ flex:1; font-size:13.5px; font-weight:600;}
+  .set-item.logout .t{ color:var(--coral);}
+  .set-item.logout .ic{ background:var(--coral-pale);}
+
+  /* Bottom nav */
+  .bottom-nav{
+    display:flex; justify-content:space-around; align-items:center;
+    padding:10px 6px 14px; background:rgba(250,247,241,0.92); backdrop-filter:blur(10px);
+    border-top:1px solid var(--line); flex-shrink:0; position:relative; z-index:30;
+  }
+  .nav-btn{ display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; padding:4px 10px; color:var(--ink-faint);}
+  .nav-btn .lbl{ font-size:10px; font-weight:700;}
+  .nav-btn.active{ color:var(--teal-deep);}
+  .nav-btn svg{ width:21px; height:21px;}
+
+  /* small helpers */
+  .row-between{ display:flex; justify-content:space-between; align-items:center;}
+  .center-col{ display:flex; flex-direction:column; align-items:center;}
+  .hint-below{ text-align:center; font-size:12px; color:var(--ink-faint); margin-top:14px;}
+  .link-txt{ color:var(--teal-deep); font-weight:700; cursor:pointer;}
+
+  @media (max-width:430px){
+    .device{ width:100%; max-width:390px; height:88vh; min-height:640px; border-radius:36px; padding:10px;}
+    .screen-frame{ border-radius:26px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="stage-header">
+  <div class="eyebrow">Clickable Prototype · Demo Day</div>
+  <h1>DROOSK</h1>
+  <p>It doesn't just help you find training. It helps you know <span class="tag">which</span> training you need. Tap through the flow below — every screen is connected.</p>
+</div>
+
+<div class="device">
+  <div class="screen-frame">
+    <div class="status-bar">
+      <span>9:41</span>
+      <span style="display:flex; gap:4px; align-items:center;">
+        <svg width="16" height="11" viewBox="0 0 16 11" fill="none"><rect x="0" y="7" width="3" height="4" rx="0.5" fill="#182420"/><rect x="4.5" y="5" width="3" height="6" rx="0.5" fill="#182420"/><rect x="9" y="2.5" width="3" height="8.5" rx="0.5" fill="#182420"/><rect x="13" y="0" width="3" height="11" rx="0.5" fill="#182420"/></svg>
+        <svg width="16" height="11" viewBox="0 0 24 16" fill="none"><rect x="1" y="1" width="22" height="14" rx="3" stroke="#182420" stroke-width="1.4"/><rect x="3" y="3" width="18" height="10" rx="1.5" fill="#182420"/></svg>
+      </span>
+    </div>
+
+    <div class="app-body">
+
+      <!-- 1. SPLASH -->
+      <div class="screen active" id="screen-splash" data-tab="none">
+        <div class="screen-scroll">
+          <div class="splash-tooth">
+            <svg width="88" height="100" viewBox="0 0 88 100" fill="none">
+              <path d="M44 4C28 4 22 14 18 14C10 14 4 24 4 38C4 56 12 66 16 82C18 90 22 96 28 96C36 96 34 70 44 70C54 70 52 96 60 96C66 96 70 90 72 82C76 66 84 56 84 38C84 24 78 14 70 14C66 14 60 4 44 4Z" fill="var(--teal-pale)" stroke="var(--teal-deep)" stroke-width="2.5"/>
+            </svg>
+          </div>
+          <p class="brand-word">DROOSK</p>
+          <p class="brand-sub">Clinical training, matched to your skill gap — not just a list of clinics.</p>
+          <div class="splash-loader"><div class="splash-loader-fill"></div></div>
+        </div>
+      </div>
+
+      <!-- 2. ONBOARDING -->
+      <div class="screen" id="screen-onboarding" data-tab="none">
+        <div class="screen-scroll" style="display:flex;flex-direction:column;justify-content:center;">
+          <div id="onb-slides"></div>
+          <div class="onb-dots" id="onb-dots"></div>
+          <button class="btn btn-primary" style="margin-top:18px;" onclick="onbNext()" id="onb-next-btn">Next</button>
+          <button class="btn btn-ghost" onclick="navigate('signup')">Skip</button>
+        </div>
+      </div>
+
+      <!-- 3. SIGN UP -->
+      <div class="screen" id="screen-signup" data-tab="none">
+        <div class="screen-scroll">
+          <div class="topbar"><div class="back-btn" onclick="goBack()">${'{'}${'}'}</div></div>
+          <p class="eyebrow-sm">Get started</p>
+          <h2 style="font-family:'Fraunces',serif; font-size:24px; font-weight:600; margin:8px 0 24px;">Create your student account</h2>
+          <div class="field"><label>Full name</label><input type="text" value="Ahmed Mohamed"></div>
+          <div class="field"><label>University email</label><input type="text" value="ahmed.mohamed@must.edu.eg"></div>
+          <div class="field"><label>Password</label><input type="password" value="••••••••"></div>
+          <button class="btn btn-primary" style="margin-top:10px;" onclick="navigate('profileSetup')">Create Account</button>
+          <p class="hint-below">Already have an account? <span class="link-txt" onclick="navigate('profileSetup')">Log in</span></p>
+        </div>
+      </div>
+
+      <!-- 4. PROFILE SETUP -->
+      <div class="screen" id="screen-profileSetup" data-tab="none">
+        <div class="screen-scroll">
+          <div class="topbar"><div class="back-btn" onclick="goBack()">${'{'}${'}'}</div><h2>Your profile</h2></div>
+          <p class="muted" style="margin-bottom:20px;">Tell us a bit about your studies so we can personalize your training path.</p>
+          <div class="field"><label>University</label><input type="text" value="Faculty of Dentistry — Cairo University"></div>
+          <div class="field"><label>Academic year</label><input type="text" value="4th Year"></div>
+          <div class="field">
+            <label>Areas you're most interested in</label>
+            <div class="chip-row" id="interest-chips">
+              <div class="chip selected">Patient Handling</div>
+              <div class="chip">Endodontics</div>
+              <div class="chip selected">Treatment Planning</div>
+              <div class="chip">Orthodontics</div>
+              <div class="chip">Communication</div>
+            </div>
+          </div>
+          <button class="btn btn-primary" style="margin-top:14px;" onclick="navigate('assessIntro')">Continue</button>
+        </div>
+      </div>
+
+      <!-- 5. SKILL ASSESSMENT (intro + quiz combined) -->
+      <div class="screen" id="screen-assessIntro" data-tab="none">
+        <div class="screen-scroll">
+          <div class="topbar"><div class="back-btn" onclick="goBack()">${'{'}${'}'}</div></div>
+          <div class="assess-intro-visual">
+            <svg width="70" height="80" viewBox="0 0 88 100" fill="none">
+              <path d="M44 4C28 4 22 14 18 14C10 14 4 24 4 38C4 56 12 66 16 82C18 90 22 96 28 96C36 96 34 70 44 70C54 70 52 96 60 96C66 96 70 90 72 82C76 66 84 56 84 38C84 24 78 14 70 14C66 14 60 4 44 4Z" fill="none" stroke="#E9F3EF" stroke-width="3"/>
+            </svg>
+          </div>
+          <p class="eyebrow-sm">Skill assessment · ~2 min</p>
+          <h2 style="font-family:'Fraunces',serif; font-size:23px; font-weight:600; margin:8px 0 10px;">Let's find your clinical skill gap</h2>
+          <p class="muted" style="margin-bottom:24px;">Answer 5 quick scenario questions. We'll use your responses to score your Patient Handling, Communication, Clinical Assessment and Treatment Planning skills — then recommend exactly what to train next.</p>
+          <button class="btn btn-primary" onclick="startQuiz()">Start Assessment</button>
+        </div>
+      </div>
+
+      <div class="screen" id="screen-quiz" data-tab="none">
+        <div class="screen-scroll">
+          <div class="topbar"><div class="back-btn" onclick="goBack()">${'{'}${'}'}</div></div>
+          <div class="quiz-progress" id="quiz-progress"></div>
+          <div id="quiz-q-num" class="quiz-q-num"></div>
+          <div id="quiz-question" class="quiz-question"></div>
+          <div id="quiz-options"></div>
+          <button class="btn btn-primary" style="margin-top:14px;" id="quiz-next-btn" onclick="quizNext()" disabled>Next</button>
+        </div>
+      </div>
+
+      <div class="screen" id="screen-quizLoading" data-tab="none">
+        <div class="loading-wrap">
+          <div class="spinner"></div>
+          <p style="font-family:'Fraunces',serif; font-size:17px; font-weight:600; margin:0 0 6px;">Analyzing your responses</p>
+          <p class="muted">Scoring your clinical skill profile…</p>
+        </div>
+      </div>
+
+      <!-- 6. ASSESSMENT RESULT -->
+      <div class="screen" id="screen-assessResult" data-tab="none">
+        <div class="screen-scroll">
+          <div class="topbar"><div class="back-btn" onclick="goBack()">${'{'}${'}'}</div><h2>Your result</h2></div>
+          <div class="result-hero">
+            <div class="tooth-wrap" style="width:96px;height:110px;">
+              <svg class="tooth-bg" width="96" height="110" viewBox="0 0 88 100" fill="none"><path d="M44 4C28 4 22 14 18 14C10 14 4 24 4 38C4 56 12 66 16 82C18 90 22 96 28 96C36 96 34 70 44 70C54 70 52 96 60 96C66 96 70 90 72 82C76 66 84 56 84 38C84 24 78 14 70 14C66 14 60 4 44 4Z" fill="var(--teal-pale)" stroke="var(--teal-deep)" stroke-width="2"/></svg>
+              <svg class="tooth-fg" style="--pct:58%" width="96" height="110" viewBox="0 0 88 100" fill="none"><path d="M44 4C28 4 22 14 18 14C10 14 4 24 4 38C4 56 12 66 16 82C18 90 22 96 28 96C36 96 34 70 44 70C54 70 52 96 60 96C66 96 70 90 72 82C76 66 84 56 84 38C84 24 78 14 70 14C66 14 60 4 44 4Z" fill="var(--teal-deep)"/></svg>
+              <div class="tooth-label"><span style="font-size:20px;color:var(--teal-deep);">58%</span></div>
+            </div>
+            <div class="level-badge">★ Intermediate Level</div>
+          </div>
+          <div class="section-label">Skill breakdown</div>
+          <div class="card">
+            <div class="skill-row"><div class="skill-row-info"><div class="skill-row-top"><span class="name">Patient Handling</span><span class="pct">42%</span></div><div class="bar-track"><div class="bar-fill" style="width:42%; background:linear-gradient(90deg,#E1654F,#D9614C);"></div></div></div></div>
+            <div class="skill-row"><div class="skill-row-info"><div class="skill-row-top"><span class="name">Communication</span><span class="pct">78%</span></div><div class="bar-track"><div class="bar-fill" style="width:78%;"></div></div></div></div>
+            <div class="skill-row"><div class="skill-row-info"><div class="skill-row-top"><span class="name">Clinical Assessment</span><span class="pct">65%</span></div><div class="bar-track"><div class="bar-fill" style="width:65%;"></div></div></div></div>
+            <div class="skill-row"><div class="skill-row-info"><div class="skill-row-top"><span class="name">Treatment Planning</span><span class="pct">20%</span></div><div class="bar-track"><div class="bar-fill" style="width:20%; background:linear-gradient(90deg,#E0A458,#D99A4E);"></div></div></div></div>
+          </div>
+          <button class="btn btn-primary" style="margin-top:22px;" onclick="navigate('skillGap')">See My Skill Gap</button>
+        </div>
+      </div>
+
+      <!-- 7. SKILL GAP -->
+      <div class="screen" id="screen-skillGap" data-tab="none">
+        <div class="screen-scroll">
+          <div class="topbar"><div class="back-btn" onclick="goBack()">${'{'}${'}'}</div><h2>Your skill gap</h2></div>
+          <div class="gap-callout">
+            <p class="eyebrow-sm">Biggest opportunity</p>
+            <h3>Patient Handling is holding you back</h3>
+            <p class="muted" style="color:#7A4A20;">You're scoring 42% here — well below your Communication (78%). Closing this gap is the fastest way to move from Intermediate to Advanced.</p>
+          </div>
+          <div class="section-label">Why this matters</div>
+          <div class="card" style="margin-bottom:16px;">
+            <div style="display:flex; gap:12px; padding:8px 0;">
+              <svg width="20" height="20" fill="none" style="flex-shrink:0;margin-top:2px;"><circle cx="10" cy="10" r="9" stroke="#0F5C56" stroke-width="1.6"/><path d="M6 10l3 3 5-6" stroke="#0F5C56" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <p class="muted" style="margin:0;">Patient Handling is used in nearly every clinical case you'll see this year.</p>
+            </div>
+            <div style="display:flex; gap:12px; padding:8px 0;">
+              <svg width="20" height="20" fill="none" style="flex-shrink:0;margin-top:2px;"><circle cx="10" cy="10" r="9" stroke="#0F5C56" stroke-width="1.6"/><path d="M6 10l3 3 5-6" stroke="#0F5C56" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <p class="muted" style="margin:0;">It's a prerequisite skill before Endodontic training unlocks at Advanced level.</p>
+            </div>
+            <div style="display:flex; gap:12px; padding:8px 0;">
+              <svg width="20" height="20" fill="none" style="flex-shrink:0;margin-top:2px;"><circle cx="10" cy="10" r="9" stroke="#0F5C56" stroke-width="1.6"/><path d="M6 10l3 3 5-6" stroke="#0F5C56" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <p class="muted" style="margin:0;">Verified dentists rate Patient Handling as the #1 gap among 4th-year students.</p>
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="navigate('home')">Show Me the Right Training</button>
+        </div>
+      </div>
+
+      <!-- 8. HOME -->
+      <div class="screen" id="screen-home" data-tab="home">
+        <div class="screen-scroll">
+          <div class="greet">
+            <div>
+              <h1>Hi, Ahmed 👋</h1>
+            </div>
+            <div class="avatar" onclick="navigateTab('settings')">AM</div>
+          </div>
+          <p class="home-tagline">Here's the training that closes your biggest skill gap right now.</p>
+
+          <div class="reco-card" onclick="openTraining('t1')">
+            <div class="reco-eyebrow">Recommended for you</div>
+            <div class="reco-title">Clinical Patient Handling</div>
+            <div class="reco-why">Matches your current level · Helps improve your Patient Handling · Based on your skill gap</div>
+            <div class="reco-meta"><span>3 DAYS</span><span>CAIRO</span><span>★ 4.8</span></div>
+            <div class="reco-cta">View Training →</div>
+          </div>
+
+          <div class="quick-row">
+            <div class="quick-tile" onclick="navigateTab('progress')"><div class="n">58%</div><div class="l">Overall Level</div></div>
+            <div class="quick-tile" onclick="navigateTab('myTraining')"><div class="n">3</div><div class="l">Verified Trainings</div></div>
+            <div class="quick-tile" onclick="navigateTab('trainingList')"><div class="n">12</div><div class="l">Nearby Trainings</div></div>
+          </div>
+
+          <div class="section-label">Explore more training</div>
+          <div id="home-training-list"></div>
+
+          <div class="promo-strip" onclick="navigateTab('tools')">
+            <div class="ic">
+              <svg width="18" height="18" fill="none"><path d="M2 9h14M9 2v14" stroke="#D99A4E" stroke-width="1.6" stroke-linecap="round"/></svg>
+            </div>
+            <div><div class="t">Tools & Supplies</div><div class="s">Student kits, deals, and instruments</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 9. RECOMMENDED / TRAINING LIST -->
+      <div class="screen" id="screen-trainingList" data-tab="training">
+        <div class="screen-scroll">
+          <div class="topbar"><h2>Training</h2></div>
+          <div class="filter-scroll">
+            <div class="filter-chip active">All</div>
+            <div class="filter-chip">Level</div>
+            <div class="filter-chip">Specialty</div>
+            <div class="filter-chip">Distance</div>
+            <div class="filter-chip">Price</div>
+            <div class="filter-chip">Available dates</div>
+          </div>
+          <div id="training-list-full"></div>
+        </div>
+      </div>
+
+      <!-- 10. TRAINING DETAILS -->
+      <div class="screen" id="screen-trainingDetails" data-tab="training">
+        <div class="screen-scroll">
+          <div class="topbar"><div class="back-btn" onclick="goBack()">${'{'}${'}'}</div></div>
+          <div id="td-locked-banner"></div>
+          <div class="td-hero">
+            <svg width="60" height="68" viewBox="0 0 88 100" fill="none"><path d="M44 4C28 4 22 14 18 14C10 14 4 24 4 38C4 56 12 66 16 82C18 90 22 96 28 96C36 96 34 70 44 70C54 70 52 96 60 96C66 96 70 90 72 82C76 66 84 56 84 38C84 24 78 14 70 14C66 14 60 4 44 4Z" fill="none" stroke="var(--teal-deep)" stroke-width="2"/></svg>
+          </div>
+          <span class="verified-badge" id="td-verified">✓ Verified Clinic</span>
+          <div class="td-title" id="td-title">Clinical Patient Handling</div>
+          <div class="td-clinic" id="td-clinic">Dr. Ahmed Dental Clinic · Dr. Ahmed Hassan</div>
+          <div class="info-grid">
+            <div class="info-cell"><div class="l">Level</div><div class="v" id="td-level">Intermediate</div></div>
+            <div class="info-cell"><div class="l">Duration</div><div class="v" id="td-duration">3 Days</div></div>
+            <div class="info-cell"><div class="l">Location</div><div class="v" id="td-location">Cairo</div></div>
+            <div class="info-cell"><div class="l">Price</div><div class="v" id="td-price">EGP 850</div></div>
+          </div>
+          <div class="section-label">What you'll learn</div>
+          <ul class="learn-list" id="td-skills"></ul>
+          <div class="section-label">Cases</div>
+          <p class="muted" id="td-cases">6 live patient cases, supervised.</p>
+          <div class="section-label">Why this training is recommended for you</div>
+          <div class="why-box"><h4>Built for your current gap</h4><div id="td-reasons"></div></div>
+          <div class="section-label">Student reviews · <span id="td-rating">4.8 ★ (126)</span></div>
+          <div class="review-card"><div class="review-avatar">S</div><div><div class="review-name">Sara K.</div><div class="review-stars">★★★★★</div><div class="review-text">Clear structure and real supervised cases — my confidence with patients improved fast.</div></div></div>
+          <div class="review-card"><div class="review-avatar">M</div><div><div class="review-name">Mostafa R.</div><div class="review-stars">★★★★☆</div><div class="review-text">Great dentist feedback after every session. Would've liked more time slots.</div></div></div>
+        </div>
+        <div class="sticky-cta">
+          <button class="btn btn-primary" id="td-cta" onclick="navigate('booking')">Book Training</button>
+        </div>
+      </div>
+
+      <!-- 11. BOOKING -->
+      <div class="screen" id="screen-booking" data-tab="training">
+        <div class="screen-scroll">
+          <div class="topbar"><div class="back-btn" onclick="goBack()">${'{'}${'}'}</div><h2>Book Training</h2></div>
+          <p class="muted" id="booking-name" style="font-weight:700; color:var(--ink); font-size:15px; margin-bottom:16px;">Clinical Patient Handling</p>
+          <div class="section-label">Select a date</div>
+          <div class="date-scroll" id="booking-dates"></div>
+          <div class="section-label">Select a time</div>
+          <div class="chip-row" id="booking-times">
+            <div class="time-chip" onclick="pickTime(this)">9:00 AM</div>
+            <div class="time-chip selected" onclick="pickTime(this)">1:00 PM</div>
+            <div class="time-chip" onclick="pickTime(this)">4:30 PM</div>
+          </div>
+          <div class="section-label">Summary</div>
+          <div class="card">
+            <div class="summary-row"><span>Duration</span><span id="booking-duration">3 Days</span></div>
+            <div class="summary-row"><span>Base price</span><span id="booking-price">EGP 850</span></div>
+            <div class="summary-row discount-row"><span>Student discount</span><span>− EGP 85</span></div>
+            <div class="summary-row total"><span>Total</span><span id="booking-total">EGP 765</span></div>
+          </div>
+        </div>
+        <div class="sticky-cta"><button class="btn btn-primary" onclick="confirmBooking()">Confirm Booking</button></div>
+      </div>
+
+      <!-- 12. CONFIRMATION -->
+      <div class="screen" id="screen-confirmation" data-tab="training">
+        <div class="screen-scroll">
+          <div class="confirm-wrap">
+            <div class="confirm-check">
+              <svg width="40" height="40" fill="none"><path d="M8 20l8 8 16-16" stroke="#0F5C56" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="confirm-title">Training Booked Successfully 🎉</div>
+            <p class="muted">A confirmation has been sent — see you in clinic.</p>
+            <div class="card confirm-card">
+              <div class="confirm-line"><span class="l">Clinic</span><span class="v" id="conf-clinic">Dr. Ahmed Dental Clinic</span></div>
+              <div class="confirm-line"><span class="l">Dentist</span><span class="v" id="conf-dentist">Dr. Ahmed Hassan</span></div>
+              <div class="confirm-line"><span class="l">Date</span><span class="v" id="conf-date">Mon, 24 Aug</span></div>
+              <div class="confirm-line"><span class="l">Time</span><span class="v" id="conf-time">1:00 PM</span></div>
+              <div class="confirm-line"><span class="l">Location</span><span class="v" id="conf-location">Cairo, Dokki</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="sticky-cta"><button class="btn btn-primary" onclick="navigateTab('myTraining')">View Training</button></div>
+      </div>
+
+      <!-- 13. MY TRAINING -->
+      <div class="screen" id="screen-myTraining" data-tab="myTraining">
+        <div class="screen-scroll">
+          <div class="topbar"><h2>My Training</h2></div>
+          <div class="tab-row">
+            <div class="tab-btn active" onclick="mtTab('upcoming', this)">Upcoming</div>
+            <div class="tab-btn" onclick="mtTab('completed', this)">Completed</div>
+            <div class="tab-btn" onclick="mtTab('saved', this)">Saved</div>
+          </div>
+          <div id="mt-content"></div>
+        </div>
+      </div>
+
+      <!-- 14. DOCTOR VERIFICATION -->
+      <div class="screen" id="screen-doctorVerification" data-tab="myTraining">
+        <div class="screen-scroll">
+          <div class="topbar"><div class="back-btn" onclick="goBack()">${'{'}${'}'}</div><h2>Clinical Training Verification</h2></div>
+
+          <div id="verify-pending" class="verify-pending">
+            <div class="verify-profile">
+              <div class="av">AM</div>
+              <div><div style="font-weight:700; font-size:14.5px;">Ahmed Mohamed</div><div class="muted">4th Year · Cairo University</div></div>
+            </div>
+            <div class="section-label">Training</div>
+            <p style="font-weight:700; font-size:15px; margin:0 0 2px;">Patient Handling – Intermediate</p>
+            <p class="muted" style="margin-bottom:14px;">Completed 12 Aug 2026 · Dr. Ahmed Dental Clinic</p>
+            <div class="section-label">Skills practiced</div>
+            <ul class="verify-checklist">
+              <li><span class="chk"><svg width="12" height="12" fill="none"><path d="M2 6l3 3 5-7" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span> Patient Communication</li>
+              <li><span class="chk"><svg width="12" height="12" fill="none"><path d="M2 6l3 3 5-7" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span> Patient Handling</li>
+              <li><span class="chk"><svg width="12" height="12" fill="none"><path d="M2 6l3 3 5-7" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span> Clinical Assessment</li>
+            </ul>
+            <div class="doctor-sign">
+              <div class="av">AH</div>
+              <div><div style="font-weight:700; font-size:13px;">Dr. Ahmed Hassan</div><div style="font-size:11.5px; color:var(--teal-deep); font-weight:600;">Verified Dentist ✓</div></div>
+            </div>
+            <button class="btn btn-primary" onclick="doVerify()">Verify Training</button>
+          </div>
+
+          <div id="verify-success" class="verify-success">
+            <div class="confirm-check"><svg width="40" height="40" fill="none"><path d="M8 20l8 8 16-16" stroke="#0F5C56" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            <div class="confirm-title">Training Verified Successfully</div>
+            <p class="muted" style="margin-bottom:22px;">This training now appears as verified on Ahmed's clinical profile.</p>
+            <button class="btn btn-secondary" onclick="navigateTab('clinicalProfile')">View Clinical Profile</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 15. CLINICAL PROFILE -->
+      <div class="screen" id="screen-clinicalProfile" data-tab="progress">
+        <div class="screen-scroll">
+          <div class="topbar"><h2>Clinical Profile</h2></div>
+          <div class="cp-header">
+            <div class="cp-avatar">AM</div>
+            <div class="cp-name">Ahmed Mohamed</div>
+            <div class="cp-uni">Faculty of Dentistry — Cairo University</div>
+            <div class="level-badge" style="margin-top:12px;">★ Intermediate Level</div>
+          </div>
+          <div class="stat-row">
+            <div class="stat-tile"><div class="n">3</div><div class="l">Verified</div></div>
+            <div class="stat-tile"><div class="n">58%</div><div class="l">Overall Score</div></div>
+            <div class="stat-tile"><div class="n">2</div><div class="l">Dentists</div></div>
+          </div>
+          <div class="section-label">Skill progress</div>
+          <div class="card">
+            <div class="skill-row"><div class="skill-row-info"><div class="skill-row-top"><span class="name">Communication</span><span class="pct">78%</span></div><div class="bar-track"><div class="bar-fill" style="width:78%;"></div></div></div></div>
+            <div class="skill-row"><div class="skill-row-info"><div class="skill-row-top"><span class="name">Clinical Assessment</span><span class="pct">65%</span></div><div class="bar-track"><div class="bar-fill" style="width:65%;"></div></div></div></div>
+            <div class="skill-row"><div class="skill-row-info"><div class="skill-row-top"><span class="name">Patient Handling</span><span class="pct">42%</span></div><div class="bar-track"><div class="bar-fill" style="width:42%; background:linear-gradient(90deg,#E1654F,#D9614C);"></div></div></div></div>
+            <div class="skill-row"><div class="skill-row-info"><div class="skill-row-top"><span class="name">Treatment Planning</span><span class="pct">20%</span></div><div class="bar-track"><div class="bar-fill" style="width:20%; background:linear-gradient(90deg,#E0A458,#D99A4E);"></div></div></div></div>
+          </div>
+          <div class="section-label">Verified clinical experience</div>
+          <div class="card">
+            <div class="exp-card"><div class="exp-ic"><svg width="16" height="16" fill="none"><path d="M2 8l4 4 8-9" stroke="#0F5C56" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div><div style="font-weight:700; font-size:13px;">Patient Communication Basics</div><div class="muted">Smile Care Center · Verified by Dr. Mona Farid</div></div></div>
+            <div class="exp-card"><div class="exp-ic"><svg width="16" height="16" fill="none"><path d="M2 8l4 4 8-9" stroke="#0F5C56" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div><div style="font-weight:700; font-size:13px;">Clinical Assessment I</div><div class="muted">Nile Dental Institute · Verified by Dr. Omar Saeed</div></div></div>
+            <div class="exp-card"><div class="exp-ic"><svg width="16" height="16" fill="none"><path d="M2 8l4 4 8-9" stroke="#0F5C56" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div><div style="font-weight:700; font-size:13px;">Patient Handling – Intermediate</div><div class="muted">Dr. Ahmed Dental Clinic · Verified by Dr. Ahmed Hassan</div></div></div>
+          </div>
+          <button class="btn btn-secondary" style="margin-top:18px;" onclick="navigateTab('progress')">View Clinical Journey</button>
+        </div>
+      </div>
+
+      <!-- 16. PROGRESS / CLINICAL JOURNEY -->
+      <div class="screen" id="screen-progress" data-tab="progress">
+        <div class="screen-scroll">
+          <div class="topbar"><h2>Clinical Journey</h2></div>
+          <div class="journey-ladder">
+            <div class="journey-step done"><div class="node"><svg width="14" height="14" fill="none"><path d="M2 7l3 3 7-8" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="lbl">Beginner</div></div>
+            <div class="journey-step current"><div class="node"><svg width="10" height="10"><circle cx="5" cy="5" r="5" fill="#fff"/></svg></div><div class="lbl">Intermediate</div></div>
+            <div class="journey-step"><div class="node"></div><div class="lbl">Advanced</div></div>
+          </div>
+          <p class="muted" style="text-align:center; margin-bottom:24px;">Your level rises automatically as verified training closes each skill gap.</p>
+
+          <div class="section-label">Skills</div>
+          <div class="card">
+            <div class="skill-node">
+              <div class="tooth-wrap" style="width:34px;height:40px;">
+                <svg class="tooth-bg" width="34" height="40" viewBox="0 0 88 100" fill="none"><path d="M44 4C28 4 22 14 18 14C10 14 4 24 4 38C4 56 12 66 16 82C18 90 22 96 28 96C36 96 34 70 44 70C54 70 52 96 60 96C66 96 70 90 72 82C76 66 84 56 84 38C84 24 78 14 70 14C66 14 60 4 44 4Z" fill="var(--teal-pale)" stroke="var(--teal-deep)" stroke-width="2"/></svg>
+                <svg class="tooth-fg" style="--pct:100%" width="34" height="40" viewBox="0 0 88 100" fill="none"><path d="M44 4C28 4 22 14 18 14C10 14 4 24 4 38C4 56 12 66 16 82C18 90 22 96 28 96C36 96 34 70 44 70C54 70 52 96 60 96C66 96 70 90 72 82C76 66 84 56 84 38C84 24 78 14 70 14C66 14 60 4 44 4Z" fill="var(--teal-deep)"/></svg>
+              </div>
+              <div class="info"><div class="name">Communication</div><div class="status">Verified ✓ · 78%</div></div>
+            </div>
+            <div class="skill-node">
+              <div class="tooth-wrap" style="width:34px;height:40px;">
+                <svg class="tooth-bg" width="34" height="40" viewBox="0 0 88 100" fill="none"><path d="M44 4C28 4 22 14 18 14C10 14 4 24 4 38C4 56 12 66 16 82C18 90 22 96 28 96C36 96 34 70 44 70C54 70 52 96 60 96C66 96 70 90 72 82C76 66 84 56 84 38C84 24 78 14 70 14C66 14 60 4 44 4Z" fill="var(--teal-pale)" stroke="var(--teal-deep)" stroke-width="2"/></svg>
+                <svg class="tooth-fg" style="--pct:65%" width="34" height="40" viewBox="0 0 88 100" fill="none"><path d="M44 4C28 4 22 14 18 14C10 14 4 24 4 38C4 56 12 66 16 82C18 90 22 96 28 96C36 96 34 70 44 70C54 70 52 96 60 96C66 96 70 90 72 82C76 66 84 56 84 38C84 24 78 14 70 14C66 14 60 4 44 4Z" fill="var(--teal-deep)"/></svg>
+              </div>
+              <div class="info"><div class="name">Clinical Assessment</div><div class="status">In progress · 65%</div></div>
+            </div>
+            <div class="skill-node">
+              <div class="tooth-wrap" style="width:34px;height:40px;">
+                <svg class="tooth-bg" width="34" height="40" viewBox="0 0 88 100" fill="none"><path d="M44 4C28 4 22 14 18 14C10 14 4 24 4 38C4 56 12 66 16 82C18 90 22 96 28 96C36 96 34 70 44 70C54 70 52 96 60 96C66 96 70 90 72 82C76 66 84 56 84 38C84 24 78 14 70 14C66 14 60 4 44 4Z" fill="var(--teal-pale)" stroke="var(--teal-deep)" stroke-width="2"/></svg>
+                <svg class="tooth-fg" style="--pct:42%" width="34" height="40" viewBox="0 0 88 100" fill="none"><path d="M44 4C28 4 22 14 18 14C10 14 4 24 4 38C4 56 12 66 16 82C18 90 22 96 28 96C36 96 34 70 44 70C54 70 52 96 60 96C66 96 70 90 72 82C76 66 84 56 84 38C84 24 78 14 70 14C66 14 60 4 44 4Z" fill="#D9614C"/></svg>
+              </div>
+              <div class="info"><div class="name">Patient Handling</div><div class="status">Focus area · 42% — training booked</div></div>
+            </div>
+            <div class="skill-node">
+              <div class="tooth-wrap" style="width:34px;height:40px;">
+                <svg class="tooth-bg" width="34" height="40" viewBox="0 0 88 100" fill="none"><path d="M44 4C28 4 22 14 18 14C10 14 4 24 4 38C4 56 12 66 16 82C18 90 22 96 28 96C36 96 34 70 44 70C54 70 52 96 60 96C66 96 70 90 72 82C76 66 84 56 84 38C84 24 78 14 70 14C66 14 60 4 44 4Z" fill="var(--teal-pale)" stroke="var(--teal-deep)" stroke-width="2"/></svg>
+                <svg class="tooth-fg" style="--pct:20%" width="34" height="40" viewBox="0 0 88 100" fill="none"><path d="M44 4C28 4 22 14 18 14C10 14 4 24 4 38C4 56 12 66 16 82C18 90 22 96 28 96C36 96 34 70 44 70C54 70 52 96 60 96C66 96 70 90 72 82C76 66 84 56 84 38C84 24 78 14 70 14C66 14 60 4 44 4Z" fill="#D99A4E"/></svg>
+              </div>
+              <div class="info"><div class="name">Treatment Planning</div><div class="status">In progress · 20%</div></div>
+            </div>
+            <div class="skill-node locked-node">
+              <div class="tooth-wrap" style="width:34px;height:40px;">
+                <svg width="34" height="40" viewBox="0 0 88 100" fill="none"><path d="M44 4C28 4 22 14 18 14C10 14 4 24 4 38C4 56 12 66 16 82C18 90 22 96 28 96C36 96 34 70 44 70C54 70 52 96 60 96C66 96 70 90 72 82C76 66 84 56 84 38C84 24 78 14 70 14C66 14 60 4 44 4Z" fill="#EFEAE0" stroke="#D8D2C2" stroke-width="2"/></svg>
+              </div>
+              <div class="info"><div class="name">Endodontic Training</div><div class="status">🔒 Unlocks at Advanced level</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 17. TOOLS & SUPPLIES (secondary) -->
+      <div class="screen" id="screen-tools" data-tab="tools">
+        <div class="screen-scroll">
+          <div class="topbar"><h2>Tools & Supplies</h2></div>
+          <div class="secondary-note">🛠️ Optional add-on — browse student kits and instruments alongside your training.</div>
+          <div class="tool-grid">
+            <div class="tool-card"><div class="ic">🦷</div><div class="n">Student Exam Kit</div><div class="p">EGP 420</div></div>
+            <div class="tool-card"><div class="ic">🧤</div><div class="n">Nitrile Gloves (100)</div><div class="p">EGP 90</div></div>
+            <div class="tool-card"><div class="ic">🪞</div><div class="n">Mouth Mirror Set</div><div class="p">EGP 150</div></div>
+            <div class="tool-card"><div class="ic">💉</div><div class="n">Local Anesthesia Kit</div><div class="p">EGP 310</div></div>
+          </div>
+          <div class="promo-strip" style="margin-top:20px;" onclick="navigateTab('deals')">
+            <div class="ic">🏷️</div>
+            <div><div class="t">Student Deals</div><div class="s">15% off selected supplies this week</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 18. DEALS (secondary) -->
+      <div class="screen" id="screen-deals" data-tab="tools">
+        <div class="screen-scroll">
+          <div class="topbar"><div class="back-btn" onclick="goBack()">${'{'}${'}'}</div><h2>Student Deals</h2></div>
+          <div class="secondary-note">Sample prototype offers — not confirmed partnerships.</div>
+          <div class="deal-card"><div class="badge">-15%</div><div><div class="t">Selected dental supplies</div><div class="s">Valid on exam kits & mirrors this week</div></div></div>
+          <div class="deal-card"><div class="badge">BUNDLE</div><div><div class="t">Student tool bundle</div><div class="s">Kit + gloves + mirror set, discounted</div></div></div>
+          <div class="deal-card"><div class="badge">-10%</div><div><div class="t">Training-related offer</div><div class="s">Discount on your next booked training</div></div></div>
+        </div>
+      </div>
+
+      <!-- 19. PROFILE / SETTINGS -->
+      <div class="screen" id="screen-settings" data-tab="settings">
+        <div class="screen-scroll">
+          <div class="topbar"><h2>Profile</h2></div>
+          <div class="cp-header" style="padding-top:0;">
+            <div class="cp-avatar" style="width:64px;height:64px;font-size:22px;">AM</div>
+            <div class="cp-name" style="font-size:17px;">Ahmed Mohamed</div>
+            <div class="cp-uni">Cairo University · 4th Year</div>
+          </div>
+          <div class="set-list">
+            <div class="set-item" onclick="navigateTab('clinicalProfile')"><div class="ic">👤</div><div class="t">Personal information</div>›</div>
+            <div class="set-item"><div class="ic">🎓</div><div class="t">University</div>›</div>
+            <div class="set-item" onclick="navigate('assessResult')"><div class="ic">📊</div><div class="t">Skill level</div>›</div>
+            <div class="set-item" onclick="navigateTab('myTraining')"><div class="ic">📚</div><div class="t">Training history</div>›</div>
+            <div class="set-item"><div class="ic">🔔</div><div class="t">Notifications</div>›</div>
+            <div class="set-item" onclick="mtJump('saved')"><div class="ic">🔖</div><div class="t">Saved training</div>›</div>
+            <div class="set-item"><div class="ic">💬</div><div class="t">Help & Support</div>›</div>
+            <div class="set-item logout"><div class="ic">🚪</div><div class="t">Logout</div></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- BOTTOM NAV -->
+    <nav class="bottom-nav" id="bottomNav">
+      <div class="nav-btn active" data-tab="home" onclick="navigateTab('home')"><svg viewBox="0 0 24 24" fill="none"><path d="M3 11l9-8 9 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 10v10h14V10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="lbl">Home</span></div>
+      <div class="nav-btn" data-tab="training" onclick="navigateTab('trainingList')"><svg viewBox="0 0 24 24" fill="none"><path d="M4 19V5a2 2 0 012-2h11l3 3v13a2 2 0 01-2 2H6a2 2 0 01-2-2z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 8h6M8 12h8M8 16h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><span class="lbl">Training</span></div>
+      <div class="nav-btn" data-tab="progress" onclick="navigateTab('progress')"><svg viewBox="0 0 24 24" fill="none"><path d="M4 20V10M12 20V4M20 20v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span class="lbl">Progress</span></div>
+      <div class="nav-btn" data-tab="tools" onclick="navigateTab('tools')"><svg viewBox="0 0 24 24" fill="none"><path d="M14.7 6.3a4 4 0 10-5.66 5.66L4 17v3h3l5.04-5.04a4 4 0 005.66-5.66l-2.5 2.5-2-2 2.5-2.5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg><span class="lbl">Tools</span></div>
+      <div class="nav-btn" data-tab="settings" onclick="navigateTab('settings')"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.2" stroke="currentColor" stroke-width="1.8"/><path d="M4 20c1.5-3.5 5-5 8-5s6.5 1.5 8 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span class="lbl">Profile</span></div>
+    </nav>
+  </div>
+</div>
+
+<p class="hint-below" style="max-width:340px;">Prototype for a university project · all clinics, dentists, names, prices and reviews shown are sample data for demonstration only.</p>
+
+<script>
+// ---------- Back-button chevron icon (inserted via JS to keep markup light) ----------
+document.querySelectorAll('.back-btn').forEach(b=>{
+  b.innerHTML = '<svg viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="#182420" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+});
+
+// ---------- Data ----------
+const TRAININGS = {
+  t1:{id:'t1', title:'Clinical Patient Handling', level:'Intermediate', clinic:'Dr. Ahmed Dental Clinic', dentist:'Dr. Ahmed Hassan', duration:'3 Days', location:'Cairo, Dokki', price:'EGP 850', priceNum:850, rating:'4.8', reviews:126,
+    reasons:['Matches your current level','Helps improve your Patient Handling','Recommended based on your skill gap'],
+    skills:['Patient Communication','Patient Handling','Clinical Assessment'], cases:'6 live patient cases, supervised.',
+    dates:[{d:'24',m:'Aug'},{d:'26',m:'Aug'},{d:'29',m:'Aug'}], recommended:true, locked:false},
+  t2:{id:'t2', title:'Advanced Communication in Practice', level:'Beginner', clinic:'Smile Care Center', dentist:'Dr. Mona Farid', duration:'2 Days', location:'Cairo, Maadi', price:'EGP 600', priceNum:600, rating:'4.6', reviews:84,
+    reasons:['Builds on your Communication strength','Good pace for your current level'],
+    skills:['Patient Communication','Case Presentation'], cases:'4 simulated patient cases.',
+    dates:[{d:'25',m:'Aug'},{d:'27',m:'Aug'}], recommended:false, locked:false},
+  t3:{id:'t3', title:'Treatment Planning Workshop', level:'Intermediate', clinic:'Nile Dental Institute', dentist:'Dr. Omar Saeed', duration:'4 Days', location:'Giza', price:'EGP 1,100', priceNum:1100, rating:'4.9', reviews:203,
+    reasons:['Natural next step after Patient Handling','Closes your Treatment Planning gap'],
+    skills:['Treatment Planning','Clinical Assessment'], cases:'8 case studies with dentist review.',
+    dates:[{d:'28',m:'Aug'},{d:'30',m:'Aug'}], recommended:false, locked:false},
+  t4:{id:'t4', title:'Endodontic Fundamentals', level:'Advanced', clinic:'Cairo Root Canal Center', dentist:'Dr. Laila Nabil', duration:'5 Days', location:'Cairo, Nasr City', price:'EGP 1,450', priceNum:1450, rating:'4.7', reviews:59,
+    reasons:['Unlocks once you reach Advanced level'],
+    skills:['Endodontic Technique','Root Canal Basics'], cases:'10 live cases.',
+    dates:[], recommended:false, locked:true}
+};
+let currentTrainingId = 't1';
+let selectedDateIdx = 0;
+
+// ---------- Navigation ----------
+let history = ['splash'];
+const TAB_ROOT = {home:'home', training:'trainingList', progress:'clinicalProfile', tools:'tools', settings:'settings', myTraining:'myTraining', none:null};
+
+function render(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const el = document.getElementById('screen-'+id);
+  if(!el) return;
+  el.classList.add('active');
+  const scroller = el.querySelector('.screen-scroll');
+  if(scroller) scroller.scrollTop = 0;
+  const tab = el.dataset.tab;
+  const navbar = document.getElementById('bottomNav');
+  if(tab === 'none'){
+    navbar.style.display = 'none';
+  } else {
+    navbar.style.display = 'flex';
+    document.querySelectorAll('.nav-btn').forEach(b=> b.classList.toggle('active', b.dataset.tab === tab));
+  }
+}
+function navigate(id){ history.push(id); render(id); }
+function goBack(){ if(history.length>1){ history.pop(); render(history[history.length-1]); } }
+function navigateTab(id){ history = [id]; render(id); }
+
+// ---------- Splash -> Onboarding ----------
+setTimeout(()=>{ navigate('onboarding'); }, 1700);
+
+// ---------- Onboarding slides ----------
+const ONB = [
+  {title:'Know exactly what to train next', text:"DROOSK doesn't just help you find training. It shows you which training closes your specific skill gap.", icon:'target'},
+  {title:'A skill assessment built for dental students', text:'A quick clinical assessment scores your Patient Handling, Communication, Assessment and Treatment Planning.', icon:'chart'},
+  {title:'Book, get verified, grow', text:'Book real clinic training, get it verified by a dentist, and watch your clinical profile progress.', icon:'badge'}
+];
+let onbIdx = 0;
+function renderOnb(){
+  const s = ONB[onbIdx];
+  const icons = {
+    target:'<svg width="70" height="70" fill="none"><circle cx="35" cy="35" r="26" stroke="#0F5C56" stroke-width="2"/><circle cx="35" cy="35" r="16" stroke="#0F5C56" stroke-width="2"/><circle cx="35" cy="35" r="6" fill="#D99A4E"/></svg>',
+    chart:'<svg width="70" height="70" fill="none"><rect x="14" y="38" width="10" height="20" rx="2" fill="#B9D9D1"/><rect x="30" y="24" width="10" height="34" rx="2" fill="#1C8C7D"/><rect x="46" y="14" width="10" height="44" rx="2" fill="#0F5C56"/></svg>',
+    badge:'<svg width="70" height="70" fill="none"><path d="M35 8l6.5 5.5 8.4-.8 2 8.2 7.4 4L55 33l4.3 7.7-7.4 4-2 8.2-8.4-.8L35 60l-6.5-7.7-8.4.8-2-8.2-7.4-4L15 33l-4.3-7.9 7.4-4 2-8.2 8.4.8z" fill="#FBEEDC" stroke="#D99A4E" stroke-width="1.6"/><path d="M28 34l5 5 9-10" stroke="#7A501C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+  };
+  document.getElementById('onb-slides').innerHTML = `
+    <div class="onb-visual">${icons[s.icon]}</div>
+    <div class="onb-title">${s.title}</div>
+    <div class="onb-text">${s.text}</div>`;
+  document.getElementById('onb-dots').innerHTML = ONB.map((_,i)=>`<div class="onb-dot ${i===onbIdx?'active':''}"></div>`).join('');
+  document.getElementById('onb-next-btn').textContent = onbIdx === ONB.length-1 ? 'Get Started' : 'Next';
+}
+function onbNext(){
+  if(onbIdx < ONB.length-1){ onbIdx++; renderOnb(); }
+  else { navigate('signup'); }
+}
+renderOnb();
+
+// ---------- Interest chips ----------
+document.querySelectorAll('#interest-chips .chip').forEach(c=>{
+  c.addEventListener('click', ()=> c.classList.toggle('selected'));
+});
+
+// ---------- Quiz ----------
+const QUIZ = [
+  {q:"A nervous patient refuses to open their mouth for examination. What do you do first?", opts:["Explain the procedure calmly and ask permission again","Proceed quickly before they refuse again","Ask a colleague to take over"]},
+  {q:"You need to explain a treatment plan to a patient with no dental background. How do you start?", opts:["Use plain language and check understanding as you go","Use full clinical terminology for accuracy","Hand them a printed leaflet only"]},
+  {q:"During an exam, you notice a symptom outside today's scope. What's your move?", opts:["Note it, flag it to the supervising dentist, and inform the patient","Ignore it since it's not today's focus","Treat it yourself immediately"]},
+  {q:"A patient is anxious about a procedure's cost and timeline. How do you respond?", opts:["Walk through options and timeline clearly before proceeding","Avoid the topic and focus on the clinical side only","Refer them to the front desk without context"]},
+  {q:"You're asked to prioritize two waiting cases. What guides your decision?", opts:["Clinical urgency assessed against both patients' conditions","Whoever arrived first, regardless of condition","Whichever case is quicker to finish"]}
+];
+let quizIdx = 0;
+let quizAnswers = [];
+
+function startQuiz(){
+  quizIdx = 0; quizAnswers = [];
+  navigate('quiz');
+  renderQuiz();
+}
+function renderQuiz(){
+  document.getElementById('quiz-progress').innerHTML = QUIZ.map((_,i)=>`<span class="${i<=quizIdx && quizAnswers[i]!==undefined ? 'done':''}"></span>`).join('');
+  document.getElementById('quiz-q-num').textContent = 'Question ' + (quizIdx+1) + ' of ' + QUIZ.length;
+  document.getElementById('quiz-question').textContent = QUIZ[quizIdx].q;
+  document.getElementById('quiz-options').innerHTML = QUIZ[quizIdx].opts.map((o,i)=>
+    `<div class="quiz-option ${quizAnswers[quizIdx]===i?'selected':''}" onclick="pickAnswer(${i})"><span class="dot"></span>${o}</div>`
+  ).join('');
+  const btn = document.getElementById('quiz-next-btn');
+  btn.disabled = quizAnswers[quizIdx]===undefined;
+  btn.textContent = quizIdx === QUIZ.length-1 ? 'See My Results' : 'Next';
+}
+function pickAnswer(i){
+  quizAnswers[quizIdx] = i;
+  renderQuiz();
+}
+function quizNext(){
+  if(quizIdx < QUIZ.length-1){ quizIdx++; renderQuiz(); }
+  else {
+    navigate('quizLoading');
+    setTimeout(()=>{ navigate('assessResult'); animateBars(); }, 1300);
+  }
+}
+function animateBars(){
+  document.querySelectorAll('#screen-assessResult .bar-fill').forEach(b=>{
+    const w = b.style.width; b.style.width='0%';
+    requestAnimationFrame(()=> setTimeout(()=> b.style.width = w, 50));
+  });
+}
+
+// ---------- Home training list (mini) + Full training list ----------
+function tCardHTML(t, compact){
+  const badges = t.recommended ? `<span class="t-badge reco">Recommended</span>` : `<span class="t-badge level">${t.level}</span>`;
+  return `
+  <div class="t-card ${t.locked?'locked':''}" onclick="${t.locked? `openTraining('${t.id}')` : `openTraining('${t.id}')`}">
+    ${t.locked?`<div class="lock-pill">🔒 Locked</div>`:''}
+    <div class="t-card-top">${badges}</div>
+    <h4>${t.title}</h4>
+    <div class="clinic">${t.clinic}</div>
+    <div class="meta">
+      <span>⏱ ${t.duration}</span>
+      <span>📍 ${t.location}</span>
+    </div>
+    <div class="t-card-bottom">
+      <span class="t-price">${t.price}</span>
+      <span class="t-rating">★ ${t.rating}</span>
+    </div>
+  </div>`;
+}
+function renderTrainingLists(){
+  const homeList = Object.values(TRAININGS).filter(t=>t.id!=='t1').slice(0,2);
+  document.getElementById('home-training-list').innerHTML = homeList.map(t=>tCardHTML(t)).join('');
+  document.getElementById('training-list-full').innerHTML = Object.values(TRAININGS).map(t=>tCardHTML(t)).join('');
+}
+renderTrainingLists();
+
+// ---------- Training details ----------
+function openTraining(id){
+  currentTrainingId = id;
+  const t = TRAININGS[id];
+  document.getElementById('td-title').textContent = t.title;
+  document.getElementById('td-clinic').textContent = t.clinic + ' · ' + t.dentist;
+  document.getElementById('td-level').textContent = t.level;
+  document.getElementById('td-duration').textContent = t.duration;
+  document.getElementById('td-location').textContent = t.location;
+  document.getElementById('td-price').textContent = t.price;
+  document.getElementById('td-cases').textContent = t.cases;
+  document.getElementById('td-rating').textContent = t.rating + ' ★ (' + t.reviews + ')';
+  document.getElementById('td-skills').innerHTML = t.skills.map(s=>`<li><svg width="16" height="16" fill="none"><path d="M2 8l4 4 8-9" stroke="#0F5C56" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>${s}</li>`).join('');
+  document.getElementById('td-reasons').innerHTML = t.reasons.map(r=>`<div class="why-item">✓ ${r}</div>`).join('');
+  const ctaBtn = document.getElementById('td-cta');
+  const bannerEl = document.getElementById('td-locked-banner');
+  if(t.locked){
+    bannerEl.innerHTML = `<div class="locked-banner"><svg width="20" height="20" fill="none" style="flex-shrink:0;"><rect x="4" y="9" width="12" height="9" rx="2" stroke="#A13F2C" stroke-width="1.6"/><path d="M7 9V6a3 3 0 016 0v3" stroke="#A13F2C" stroke-width="1.6"/></svg><div><div class="t">Locked — Advanced level required</div><div class="s">Complete your Patient Handling and Treatment Planning training to unlock this.</div></div></div>`;
+    ctaBtn.textContent = 'Locked';
+    ctaBtn.disabled = true;
+    ctaBtn.onclick = null;
+  } else {
+    bannerEl.innerHTML = '';
+    ctaBtn.textContent = 'Book Training';
+    ctaBtn.disabled = false;
+    ctaBtn.onclick = ()=> openBooking();
+  }
+  document.getElementById('td-verified').style.display = 'inline-flex';
+  navigate('trainingDetails');
+}
+
+// ---------- Booking ----------
+function openBooking(){
+  const t = TRAININGS[currentTrainingId];
+  selectedDateIdx = 0;
+  document.getElementById('booking-name').textContent = t.title;
+  document.getElementById('booking-duration').textContent = t.duration;
+  document.getElementById('booking-price').textContent = t.price;
+  document.getElementById('booking-total').textContent = 'EGP ' + Math.round(t.priceNum*0.9).toLocaleString();
+  document.getElementById('booking-dates').innerHTML = t.dates.map((d,i)=>
+    `<div class="date-chip ${i===0?'selected':''}" onclick="pickDate(this, ${i})"><div class="d">${d.d}</div><div class="m">${d.m}</div></div>`
+  ).join('');
+  navigate('booking');
+}
+function pickDate(el, i){
+  document.querySelectorAll('.date-chip').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedDateIdx = i;
+}
+function pickTime(el){
+  document.querySelectorAll('.time-chip').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function confirmBooking(){
+  const t = TRAININGS[currentTrainingId];
+  const d = t.dates[selectedDateIdx] || {d:'24', m:'Aug'};
+  const selectedTime = document.querySelector('.time-chip.selected')?.textContent || '1:00 PM';
+  document.getElementById('conf-clinic').textContent = t.clinic;
+  document.getElementById('conf-dentist').textContent = t.dentist;
+  document.getElementById('conf-date').textContent = 'On ' + d.d + ' ' + d.m;
+  document.getElementById('conf-time').textContent = selectedTime;
+  document.getElementById('conf-location').textContent = t.location;
+  navigate('confirmation');
+}
+
+// ---------- My Training tabs ----------
+const MT_DATA = {
+  upcoming:[{title:'Clinical Patient Handling', clinic:'Dr. Ahmed Dental Clinic', date:'24 Aug', tags:['Patient Handling','Communication']}],
+  completed:[
+    {title:'Clinical Assessment I', clinic:'Nile Dental Institute', date:'02 Aug', tags:['Clinical Assessment'], verified:true, doctorFlow:false},
+    {title:'Patient Communication Basics', clinic:'Smile Care Center', date:'18 Jul', tags:['Patient Communication'], verified:true, doctorFlow:false},
+    {title:'Patient Handling – Intermediate', clinic:'Dr. Ahmed Dental Clinic', date:'12 Aug', tags:['Patient Handling'], verified:false, doctorFlow:true}
+  ],
+  saved:[{title:'Endodontic Fundamentals', clinic:'Cairo Root Canal Center', date:'Locked', tags:['Endodontic Technique']}]
+};
+function mtTab(name, el){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  renderMt(name);
+}
+function mtJump(name){
+  navigateTab('myTraining');
+  setTimeout(()=>{
+    document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active', ['upcoming','completed','saved'][i]===name));
+    renderMt(name);
+  },0);
+}
+function renderMt(name){
+  const items = MT_DATA[name];
+  if(!items.length){
+    document.getElementById('mt-content').innerHTML = `<div class="empty-state"><div class="ic">📭</div>No ${name} training yet.</div>`;
+    return;
+  }
+  document.getElementById('mt-content').innerHTML = items.map(it=>{
+    const pill = name==='upcoming' ? `<span class="status-pill upcoming">Upcoming</span>`
+      : name==='completed' ? `<span class="status-pill completed">${it.verified?'Verified':'Pending Review'}</span>`
+      : `<span class="status-pill saved">Saved</span>`;
+    const clickAttr = (name==='completed' && it.doctorFlow) ? `onclick="navigate('doctorVerification')"` : '';
+    return `<div class="mt-card" ${clickAttr}>
+      <div class="top"><h5>${it.title}</h5>${pill}</div>
+      <div class="muted">${it.clinic} · ${it.date}</div>
+      <div class="skills-tag-row">${it.tags.map(t=>`<span class="skill-tag">${t}</span>`).join('')}</div>
+    </div>`;
+  }).join('');
+}
+renderMt('upcoming');
+
+// ---------- Doctor verification ----------
+function doVerify(){
+  document.getElementById('verify-pending').classList.add('hide');
+  document.getElementById('verify-success').classList.add('show');
+  MT_DATA.completed.forEach(it=>{ if(it.doctorFlow){ it.verified = true; }});
+}
+
+// reset verification screen state whenever re-entering fresh (optional realism)
+</script>
+</body>
+</html>
